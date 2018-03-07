@@ -139,6 +139,19 @@ class NetMan (dbus.service.Object):
     def test(self):
         print("TEST")
 
+    @dbus.service.method(DBUS_NAME, "s", "s")
+    def SetNtpServer(self, ipaddr):
+        if not self._isvalidip (socket.AF_INET, ipaddr) : raise ValueError, "Malformed IP Address"
+        confFile = "/etc/systemd/network/sntpaddress"
+        try:
+            sntpaddrconf = open (confFile, "w+") 
+        except IOError:
+            raise IOError, "Failed to open " + confFile
+
+        sntpaddrconf.write (ipaddr + '.1')
+        sntpaddrconf.close()
+        return "Success"
+
     @dbus.service.method(DBUS_NAME, "s", "x")
     def EnableDHCP (self, device):
         if not self._isvaliddev (device) : raise ValueError, "Invalid Device"
