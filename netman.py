@@ -142,15 +142,32 @@ class NetMan (dbus.service.Object):
     @dbus.service.method(DBUS_NAME, "s", "s")
     def SetNtpServer(self, ipaddr):
         if not self._isvalidip (socket.AF_INET, ipaddr) : raise ValueError, "Malformed IP Address"
+
         confFile = "/etc/systemd/network/sntpaddress"
+
         try:
             sntpaddrconf = open (confFile, "w+") 
         except IOError:
             raise IOError, "Failed to open " + confFile
 
-        sntpaddrconf.write (ipaddr + '.1')
+        sntpaddrconf.write (ipaddr)
         sntpaddrconf.close()
-        return "Success"
+        return "Set NTP Server(" + ipaddr + ") Successfully"
+
+    @dbus.service.method(DBUS_NAME, "", "s")
+    def GetNtpServer(self):
+
+        confFile = "/etc/systemd/network/sntpaddress"
+
+        try:
+            f = open (confFile, "r")
+        except IOError:
+            raise IOError, "Failed to open " + confFile
+
+        ipaddr = f.read()
+        ip_ = ipaddr.split('.')
+        f.close()
+        return ("NTP Server is set %s.%s.%s.%s" % (ip_[0], ip_[1], ip_[2], ip_[3]))
 
     @dbus.service.method(DBUS_NAME, "s", "x")
     def EnableDHCP (self, device):
